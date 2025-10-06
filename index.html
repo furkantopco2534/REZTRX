@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>2D Top Kaçış Oyunu</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: white;
+        }
+        canvas {
+            background-color: #333;
+            display: block;
+            margin: 20px auto;
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+    <h1>2D Top Kaçış Oyunu</h1>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <p>Skor: <span id="score">0</span></p>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let topX = canvas.width / 2;
+        let topY = canvas.height - 30;
+        let topRadius = 15;
+        let topSpeed = 5;
+
+        let leftPressed = false;
+        let rightPressed = false;
+
+        let obstacleWidth = 50;
+        let obstacleHeight = 20;
+        let obstacles = [];
+        let score = 0;
+
+        document.addEventListener("keydown", e => {
+            if(e.key === "ArrowLeft") leftPressed = true;
+            if(e.key === "ArrowRight") rightPressed = true;
+        });
+
+        document.addEventListener("keyup", e => {
+            if(e.key === "ArrowLeft") leftPressed = false;
+            if(e.key === "ArrowRight") rightPressed = false;
+        });
+
+        function createObstacle() {
+            let x = Math.random() * (canvas.width - obstacleWidth);
+            obstacles.push({x: x, y: 0});
+        }
+
+        function drawTop() {
+            ctx.beginPath();
+            ctx.arc(topX, topY, topRadius, 0, Math.PI*2);
+            ctx.fillStyle = "yellow";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawObstacles() {
+            ctx.fillStyle = "red";
+            obstacles.forEach(obs => {
+                ctx.fillRect(obs.x, obs.y, obstacleWidth, obstacleHeight);
+                obs.y += 3;
+            });
+        }
+
+        function checkCollision() {
+            for(let obs of obstacles){
+                if(topY - topRadius < obs.y + obstacleHeight &&
+                   topY + topRadius > obs.y &&
+                   topX + topRadius > obs.x &&
+                   topX - topRadius < obs.x + obstacleWidth){
+                       alert("Oyun Bitti! Skor: " + score);
+                       document.location.reload();
+                   }
+            }
+        }
+
+        function drawScore() {
+            document.getElementById("score").textContent = score;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawTop();
+            drawObstacles();
+            checkCollision();
+            drawScore();
+
+            if(leftPressed && topX - topRadius > 0) topX -= topSpeed;
+            if(rightPressed && topX + topRadius < canvas.width) topX += topSpeed;
+
+            if(Math.random() < 0.02) {
+                createObstacle();
+                score++;
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+</html>
